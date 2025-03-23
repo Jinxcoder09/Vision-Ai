@@ -1,0 +1,14 @@
+{
+    "learning_rate": 0.001,
+    "num_epochs": 10,
+    "batch_size": 32,
+    "model_save_path": "model.h5",
+    "api_endpoint": "https://api.example.com/object-detection",
+    "confidence_threshold": 0.5,
+    "classes": [],
+    "online_learning": {
+        "enabled": true,
+        "update_interval": 3600,
+        "min_confidence": 0.8
+    }
+}
