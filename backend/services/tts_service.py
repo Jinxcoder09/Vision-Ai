@@ -215,8 +215,37 @@ async def synthesize_speech(
             logger.info("Local fallback TTS synthesized in {:.0f}ms", latency_ms)
             return wav_bytes, latency_ms
         except Exception as local_err:
-            logger.critical("Both Groq and Local TTS failed. Groq: {}, Local: {}", e, local_err)
-            raise RuntimeError(f"Speech synthesis failed: {e}")
+            logger.warning("Local Kokoro fallback failed or unavailable: {}. Trying gTTS...", local_err)
+            
+            # 3. Cloud Free Fallback: gTTS (Google Text-to-Speech)
+            try:
+                from gtts import gTTS  # type: ignore
+                logger.info("Falling back to gTTS (Google Text-to-Speech)...")
+                # Normalize lang code to 2 letters (e.g., 'a' -> 'en', 'b' -> 'en')
+                gtts_lang = effective_lang.lower()
+                if gtts_lang in {"a", "b"}:
+                    gtts_lang = "en"
+                elif len(gtts_lang) > 2:
+                    gtts_lang = gtts_lang[:2]
+
+                # Map voice accents if possible
+                tld = "com"
+                if "b" in effective_lang.lower() or "uk" in groq_voice.lower():
+                    tld = "co.uk"
+
+                tts = gTTS(text=text, lang=gtts_lang, tld=tld)
+                buf = io.BytesIO()
+                # Run the blocking gTTS API call in the thread executor
+                loop = asyncio.get_event_loop()
+                await loop.run_in_executor(None, lambda: tts.write_to_fp(buf))
+                buf.seek(0)
+                audio_bytes = buf.read()
+                latency_ms = (time.monotonic() - start) * 1000
+                logger.info("gTTS fallback synthesized in {:.0f}ms", latency_ms)
+                return audio_bytes, latency_ms
+            except Exception as gtts_err:
+                logger.critical("All TTS options failed. Groq: {}, Kokoro: {}, gTTS: {}", e, local_err, gtts_err)
+                raise RuntimeError(f"Speech synthesis failed: {e}")
 
 
 async def stream_synthesize_speech(
