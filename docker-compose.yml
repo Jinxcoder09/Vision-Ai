@@ -1,0 +1,60 @@
+services:
+  # ── Backend (FastAPI) ──────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eyeva-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - CORS_ORIGINS=["http://localhost:3000","http://frontend:3000"]
+    volumes:
+      # Persist AI model caches between container restarts
+      - paddle_models:/root/.paddleocr
+      - whisper_models:/root/.cache/huggingface/hub
+      - kokoro_models:/root/.cache/kokoro
+      - ./backend/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    networks:
+      - eyeva-network
+
+  # ── Frontend (Next.js) ─────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: eyeva-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - eyeva-network
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  paddle_models:
+    name: eyeva_paddle_models
+  whisper_models:
+    name: eyeva_whisper_models
+  kokoro_models:
+    name: eyeva_kokoro_models
+
+# ── Network ────────────────────────────────────────────────────────────────────
+networks:
+  eyeva-network:
+    driver: bridge

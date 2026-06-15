@@ -1,0 +1,25 @@
+# Render Blueprint configuration for Eyeva AI
+# Allows one-click deploy of the unified frontend + backend service.
+services:
+  - type: web
+    name: eyeva-ai
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    envVars:
+      - key: GROQ_API_KEY
+        sync: true
+        description: "Your Groq API key for Llama 4 Scout VLM, Whisper STT, and Orpheus TTS"
+
+      - key: CORS_ORIGINS
+        value: '["*"]'
+        description: "Allowed CORS origins for the API endpoints"
+
+      - key: VLM_MODEL
+        value: "meta-llama/llama-4-scout-17b-16e-instruct"
+
+      - key: WHISPER_MODEL
+        value: "whisper-large-v3-turbo"
+
+      - key: KOKORO_VOICE
+        value: "af_heart"
