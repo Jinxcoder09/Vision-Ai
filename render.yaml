@@ -1,17 +1,19 @@
 # Render Blueprint configuration for Eyeva AI
-# Allows one-click deploy of the unified frontend + backend service.
+# Native Python deployment: free tier, no credit card required.
 services:
   - type: web
     name: eyeva-ai
-    env: docker
-    dockerfilePath: Dockerfile
-    dockerContext: .
+    env: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1 --loop asyncio"
     envVars:
       - key: GROQ_API_KEY
         sync: false
+        description: "Your Groq API key for Llama 4 Scout VLM, Whisper STT, and Orpheus TTS"
 
       - key: CORS_ORIGINS
         value: '["*"]'
+        description: "Allowed CORS origins"
 
       - key: VLM_MODEL
         value: "meta-llama/llama-4-scout-17b-16e-instruct"
