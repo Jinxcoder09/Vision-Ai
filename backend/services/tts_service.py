@@ -45,7 +45,12 @@ async def _get_pipeline(lang_code: str = "a"):
     global _pipelines
     async with _pipeline_lock:
         if lang_code not in _pipelines:
-            from kokoro import KPipeline  # type: ignore
+            try:
+                from kokoro import KPipeline  # type: ignore
+            except ImportError:
+                logger.error("Kokoro package not installed. Local fallback is unavailable.")
+                raise RuntimeError("Kokoro package not installed. Local fallback is unavailable.")
+            
             logger.info("Loading local Kokoro TTS pipeline fallback — lang_code={}", lang_code)
             loop = asyncio.get_event_loop()
             pipeline = await loop.run_in_executor(
@@ -85,6 +90,17 @@ def _synthesize_sync_local(text: str, pipeline, voice: str, speed: float) -> byt
 async def init_model():
     """Verify client and eagerly pre-warm local Kokoro pipeline fallback in background."""
     await _get_client()
+    import os
+    if os.environ.get("RENDER"):
+        logger.info("Running on Render - skipping eager local Kokoro pre-warming to conserve memory.")
+        return
+
+    try:
+        import kokoro  # noqa
+    except ImportError:
+        logger.info("Kokoro package is not installed - skipping eager local Kokoro pre-warming.")
+        return
+
     try:
         # Load local Kokoro pipeline asynchronously on startup to avoid loading latency on first fallback
         asyncio.create_task(_get_pipeline(settings.kokoro_lang_code))

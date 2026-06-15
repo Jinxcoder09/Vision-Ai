@@ -34,11 +34,12 @@ async def health_check() -> HealthResponse:
     except Exception:
         services["tts"] = False
 
-    # ── Check PaddleOCR ───────────────────────────────────────────────────────
+    # ── Check OCR (NVIDIA VLM) ────────────────────────────────────────────────
     try:
-        import paddleocr  # noqa
-        services["ocr"] = True
-    except ImportError:
+        from core.config import get_settings
+        cfg = get_settings()
+        services["ocr"] = bool(cfg.effective_api_key)
+    except Exception:
         services["ocr"] = False
 
     # ── Check Groq API (Vision VLM) ───────────────────────────────────────────
