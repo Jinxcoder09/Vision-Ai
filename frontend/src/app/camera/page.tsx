@@ -340,7 +340,7 @@ export default function CameraPage() {
   const pathDirection = getSafePathDirection();
 
   return (
-    <div id="camera-hud-container" className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none">
+    <div id="hud-fullscreen" className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none">
       
       {/* ── 1. Full-Screen Live Video Stream ─────────────────────────────────── */}
       <div className="absolute inset-0 w-full h-full z-0 bg-black">
@@ -386,31 +386,31 @@ export default function CameraPage() {
               {/* Corner Brackets */}
               <path
                 d={`M ${t.x - 3}% ${t.y - 3}% L ${t.x - 1.5}% ${t.y - 3}% M ${t.x - 3}% ${t.y - 3}% L ${t.x - 3}% ${t.y - 1.5}%`}
-                stroke="#00d4ff"
+                stroke="#0099CC"
                 strokeWidth="2"
                 fill="none"
               />
               <path
                 d={`M ${t.x + 3}% ${t.y - 3}% L ${t.x + 1.5}% ${t.y - 3}% M ${t.x + 3}% ${t.y - 3}% L ${t.x + 3}% ${t.y - 1.5}%`}
-                stroke="#00d4ff"
+                stroke="#0099CC"
                 strokeWidth="2"
                 fill="none"
               />
               <path
                 d={`M ${t.x - 3}% ${t.y + 3}% L ${t.x - 1.5}% ${t.y + 3}% M ${t.x - 3}% ${t.y + 3}% L ${t.x - 3}% ${t.y + 1.5}%`}
-                stroke="#00d4ff"
+                stroke="#0099CC"
                 strokeWidth="2"
                 fill="none"
               />
               <path
                 d={`M ${t.x + 3}% ${t.y + 3}% L ${t.x + 1.5}% ${t.y + 3}% M ${t.x + 3}% ${t.y + 3}% L ${t.x + 3}% ${t.y + 1.5}%`}
-                stroke="#00d4ff"
+                stroke="#0099CC"
                 strokeWidth="2"
                 fill="none"
               />
 
               {/* Reticle Dot */}
-              <circle cx={`${t.x}%`} cy={`${t.y}%`} r="2" fill="#00d4ff" className="hud-pulse-lock" />
+              <circle cx={`${t.x}%`} cy={`${t.y}%`} r="2" fill="#0099CC" className="hud-pulse-lock" />
 
               {/* Text Indicators */}
               <foreignObject
@@ -420,7 +420,7 @@ export default function CameraPage() {
                 height="60"
                 className="overflow-visible"
               >
-                <div className="flex flex-col text-[10px] font-mono text-cyan-400 bg-black/60 px-1.5 py-1 rounded border border-cyan-500/30 w-fit backdrop-blur-sm">
+                <div className="flex flex-col text-[10px] font-mono text-cyan-400 bg-black/70 px-1.5 py-1 rounded border border-[#0099CC]/40 w-fit backdrop-blur-sm">
                   <span className="font-bold tracking-wider">{t.name}</span>
                   <div className="flex gap-2 text-[8px] opacity-80 mt-0.5">
                     <span>{t.distance}</span>
@@ -443,20 +443,20 @@ export default function CameraPage() {
             className="hud-path-flow"
           />
           {/* Grid lines */}
-          <line x1="250" y1="120" x2="350" y2="120" stroke="#00d4ff" strokeWidth="1.5" />
-          <line x1="220" y1="160" x2="380" y2="160" stroke="#00d4ff" strokeWidth="1" strokeDasharray="4 4" />
-          <line x1="180" y1="210" x2="420" y2="210" stroke="#00d4ff" strokeWidth="1" strokeDasharray="4 4" />
-          <line x1="130" y1="260" x2="470" y2="260" stroke="#00d4ff" strokeWidth="1" strokeDasharray="4 4" />
+          <line x1="250" y1="120" x2="350" y2="120" stroke="#0099CC" strokeWidth="1.5" />
+          <line x1="220" y1="160" x2="380" y2="160" stroke="#0099CC" strokeWidth="1" strokeDasharray="4 4" />
+          <line x1="180" y1="210" x2="420" y2="210" stroke="#0099CC" strokeWidth="1" strokeDasharray="4 4" />
+          <line x1="130" y1="260" x2="470" y2="260" stroke="#0099CC" strokeWidth="1" strokeDasharray="4 4" />
 
           {/* Perspective lanes */}
-          <line x1="250" y1="120" x2="100" y2="300" stroke="#00d4ff" strokeWidth="2" />
-          <line x1="300" y1="120" x2="300" y2="300" stroke="#00d4ff" strokeWidth="0.5" strokeDasharray="10 5" />
-          <line x1="350" y1="120" x2="500" y2="300" stroke="#00d4ff" strokeWidth="2" />
+          <line x1="250" y1="120" x2="100" y2="300" stroke="#0099CC" strokeWidth="2" />
+          <line x1="300" y1="120" x2="300" y2="300" stroke="#0099CC" strokeWidth="0.5" strokeDasharray="10 5" />
+          <line x1="350" y1="120" x2="500" y2="300" stroke="#0099CC" strokeWidth="2" />
 
           <defs>
             <linearGradient id="hud-path-grad" x1="0%" y1="100%" x2="0%" y2="0%">
-              <stop offset="0%" stopColor="rgba(0,212,255,0.25)" />
-              <stop offset="100%" stopColor="rgba(0,212,255,0.0)" />
+              <stop offset="0%" stopColor="rgba(0,153,204,0.25)" />
+              <stop offset="100%" stopColor="rgba(106,90,205,0.0)" />
             </linearGradient>
           </defs>
         </svg>
@@ -718,10 +718,10 @@ export default function CameraPage() {
                 onClick={handleVoiceButtonClick}
                 className={`w-20 h-20 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   status === "listening"
-                    ? "bg-rose-950/40 border-rose-500 text-rose-400 shadow-[0_0_30px_rgba(244,63,94,0.4)] animate-pulse"
+                    ? "bg-rose-950/40 border-rose-500 text-rose-400 shadow-[0_0_30px_rgba(255,82,82,0.4)] animate-pulse"
                     : status === "processing"
-                    ? "bg-amber-950/40 border-amber-500 text-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.4)] animate-pulse"
-                    : "bg-cyan-950/40 border-cyan-500 text-cyan-400 hover:border-cyan-300 shadow-[0_0_20px_rgba(0,212,255,0.2)] hover:shadow-[0_0_35px_rgba(0,212,255,0.4)]"
+                    ? "bg-amber-950/40 border-amber-500 text-amber-400 shadow-[0_0_30px_rgba(255,152,0,0.4)] animate-pulse"
+                    : "bg-[#0099CC]/10 border-[#0099CC] text-[#0099CC] hover:border-[#0099CC] shadow-[0_0_20px_rgba(0,153,204,0.2)] hover:shadow-[0_0_35px_rgba(0,153,204,0.4)]"
                 } backdrop-blur-md`}
                 aria-label={status === "listening" ? "Transmitting audio..." : "Trigger Voice Query"}
                 disabled={!isConnected && status !== "connecting"}

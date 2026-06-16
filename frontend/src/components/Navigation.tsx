@@ -2,95 +2,148 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Eye, Camera, BookOpen, Settings, Compass, Coins } from "lucide-react";
+import {
+  Eye,
+  Camera,
+  BookOpen,
+  Settings,
+  Compass,
+  Coins,
+  LayoutDashboard,
+} from "lucide-react";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: Eye, id: "nav-dashboard" },
-  { href: "/camera", label: "AI Vision", icon: Camera, id: "nav-camera" },
-  { href: "/reader", label: "Text Reader", icon: BookOpen, id: "nav-reader" },
-  { href: "/navigation", label: "Navigation", icon: Compass, id: "nav-navigation" },
-  { href: "/money", label: "Money", icon: Coins, id: "nav-money" },
-  { href: "/settings", label: "Settings", icon: Settings, id: "nav-settings" },
+  { href: "/",           label: "Dashboard",  icon: LayoutDashboard, id: "nav-dashboard" },
+  { href: "/camera",     label: "AI Vision",  icon: Camera,          id: "nav-camera" },
+  { href: "/reader",     label: "Text Reader",icon: BookOpen,        id: "nav-reader" },
+  { href: "/navigation", label: "Navigation", icon: Compass,         id: "nav-navigation" },
+  { href: "/money",      label: "Money",      icon: Coins,           id: "nav-money" },
+  { href: "/settings",   label: "Settings",   icon: Settings,        id: "nav-settings" },
+];
+
+// Bottom tab items (5 most important, desktop gets all in sidebar)
+const tabItems = [
+  { href: "/",           label: "Home",       icon: LayoutDashboard, id: "tab-dashboard" },
+  { href: "/camera",     label: "Vision",     icon: Camera,          id: "tab-camera" },
+  { href: "/reader",     label: "Reader",     icon: BookOpen,        id: "tab-reader" },
+  { href: "/navigation", label: "Navigate",   icon: Compass,         id: "tab-navigation" },
+  { href: "/settings",   label: "Settings",   icon: Settings,        id: "tab-settings" },
 ];
 
 export default function Navigation() {
   const pathname = usePathname();
 
-  return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
-      style={{
-        background: "rgba(7, 7, 26, 0.85)",
-        backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-      }}
-      role="navigation"
-      aria-label="Main navigation"
-    >
-      {/* Logo */}
-      <Link
-        href="/"
-        className="flex items-center gap-3 group"
-        id="nav-logo"
-        aria-label="Eyeva AI — Go to dashboard"
-      >
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{
-            background: "linear-gradient(135deg, #00d4ff, #a855f7)",
-          }}
-          aria-hidden="true"
-        >
-          <Eye size={18} color="#000" strokeWidth={2.5} />
-        </div>
-        <span className="font-bold text-lg tracking-tight">
-          <span className="gradient-text">Eyeva</span>
-          <span className="text-white/40 font-light ml-1 text-sm">AI</span>
-        </span>
-      </Link>
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-      {/* Nav links */}
-      <div className="hidden md:flex items-center gap-1" role="list">
-        {navItems.map(({ href, label, icon: Icon, id }) => {
-          const isActive = pathname === href;
-          return (
+  return (
+    <>
+      {/* ── Desktop / Tablet Sidebar ─────────────────────────────────────── */}
+      <aside
+        className="sidebar-nav"
+        role="navigation"
+        aria-label="Main navigation"
+      >
+        {/* Logo */}
+        <Link href="/" className="sidebar-logo" id="nav-logo" aria-label="Eyeva AI — Go to dashboard">
+          <div className="sidebar-logo-icon" aria-hidden="true">
+            <Eye size={18} color="#fff" strokeWidth={2.5} />
+          </div>
+          <div className="sidebar-logo-text">
+            <span className="sidebar-logo-name">Eyeva AI</span>
+            <span className="sidebar-logo-sub">Visual Assistant</span>
+          </div>
+        </Link>
+
+        {/* Nav links */}
+        <nav className="sidebar-nav-list" role="list">
+          {navItems.map(({ href, label, icon: Icon, id }) => (
             <Link
               key={href}
               href={href}
               id={id}
               role="listitem"
-              className={`nav-link ${isActive ? "active" : ""}`}
-              aria-current={isActive ? "page" : undefined}
-            >
-              <Icon size={16} aria-hidden="true" />
-              {label}
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* Mobile nav — icon only */}
-      <div className="flex md:hidden items-center gap-2" role="list">
-        {navItems.map(({ href, label, icon: Icon, id }) => {
-          const isActive = pathname === href;
-          return (
-            <Link
-              key={href}
-              href={href}
-              id={`${id}-mobile`}
-              className={`p-2.5 rounded-xl transition-all ${
-                isActive
-                  ? "bg-cyan-500/10 text-cyan-400"
-                  : "text-slate-500 hover:text-slate-300"
-              }`}
+              className={`sidebar-nav-item ${isActive(href) ? "active" : ""}`}
+              aria-current={isActive(href) ? "page" : undefined}
               aria-label={label}
-              aria-current={isActive ? "page" : undefined}
             >
-              <Icon size={20} aria-hidden="true" />
+              <Icon size={18} className="nav-icon" aria-hidden="true" />
+              <span className="sidebar-label">{label}</span>
             </Link>
-          );
-        })}
-      </div>
-    </nav>
+          ))}
+        </nav>
+
+        {/* Footer version */}
+        <div
+          style={{
+            padding: "12px 16px",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            fontSize: "11px",
+            color: "var(--text-muted)",
+          }}
+        >
+          <span className="sidebar-label">v2.1.0 — Eyeva AI</span>
+        </div>
+      </aside>
+
+      {/* ── Mobile Top Bar (logo + settings icon) ───────────────────────── */}
+      <header className="top-mobile-bar" aria-label="Eyeva mobile header">
+        <Link href="/" className="flex items-center gap-2" aria-label="Eyeva AI home">
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 9,
+              background: "var(--accent-gradient)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+            aria-hidden="true"
+          >
+            <Eye size={16} color="#fff" strokeWidth={2.5} />
+          </div>
+          <span
+            style={{
+              fontWeight: 700,
+              fontSize: 15,
+              background: "var(--accent-gradient)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            Eyeva AI
+          </span>
+        </Link>
+
+        <Link
+          href="/settings"
+          className="btn-icon"
+          aria-label="Settings"
+          id="mobile-settings-link"
+        >
+          <Settings size={20} aria-hidden="true" />
+        </Link>
+      </header>
+
+      {/* ── Mobile Bottom Tab Bar ────────────────────────────────────────── */}
+      <nav className="bottom-tab-bar" role="navigation" aria-label="Bottom navigation">
+        {tabItems.map(({ href, label, icon: Icon, id }) => (
+          <Link
+            key={href}
+            href={href}
+            id={id}
+            className={`bottom-tab-item ${isActive(href) ? "active" : ""}`}
+            aria-current={isActive(href) ? "page" : undefined}
+            aria-label={label}
+          >
+            <Icon size={20} aria-hidden="true" />
+            <span>{label}</span>
+          </Link>
+        ))}
+      </nav>
+    </>
   );
 }

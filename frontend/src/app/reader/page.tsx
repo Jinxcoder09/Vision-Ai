@@ -111,7 +111,7 @@ export default function TextReaderPage() {
   }, [handleRead]);
 
   return (
-    <div id="camera-hud-container" className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
+    <div id="hud-fullscreen" className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
       
       {/* ── 1. Full-Screen Camera View ────────────────────────────────────────── */}
       <div className="absolute inset-0 w-full h-full z-0 bg-black">
@@ -150,8 +150,8 @@ export default function TextReaderPage() {
 
       {/* Target framing box */}
       {cameraActive && (
-        <div className="absolute top-[20%] bottom-[38%] left-[10%] right-[10%] border-2 border-dashed border-emerald-400/40 rounded-2xl pointer-events-none z-20 flex items-center justify-center">
-          <span className="font-mono text-[10px] tracking-widest text-emerald-400/70 uppercase bg-black/60 px-3 py-1 border border-emerald-500/20 rounded">
+        <div className="absolute top-[20%] bottom-[38%] left-[10%] right-[10%] border-2 border-dashed border-[#0099CC]/50 rounded-2xl pointer-events-none z-20 flex items-center justify-center">
+          <span className="font-mono text-[10px] tracking-widest text-[#0099CC]/80 uppercase bg-black/60 px-3 py-1 border border-[#0099CC]/30 rounded">
             ALIGN TEXT INSIDE TARGET FRAME
           </span>
         </div>

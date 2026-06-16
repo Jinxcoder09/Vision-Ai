@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   keywords: ["visual assistant", "AI", "accessibility", "visually impaired", "voice", "OCR"],
   robots: "index, follow",
   openGraph: {
-    title: "Eyeva AI V1",
+    title: "Eyeva AI",
     description: "See the world through AI — voice-controlled visual assistant.",
     type: "website",
   },
@@ -23,14 +23,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#07071a" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#0A0E27" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        {/* Accessibility: inject theme classes before first paint to prevent flash */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -38,25 +39,25 @@ export default function RootLayout({
                 try {
                   var s = localStorage.getItem('eyeva-settings');
                   if (s) {
-                    var parsed = JSON.parse(s);
-                    if (parsed.textSize && parsed.textSize !== 'normal') {
-                      document.documentElement.classList.add('text-size-' + parsed.textSize);
+                    var p = JSON.parse(s);
+                    if (p.textSize && p.textSize !== 'normal') {
+                      document.documentElement.classList.add('text-size-' + p.textSize);
                     }
-                    if (parsed.contrastMode === 'high') {
+                    if (p.contrastMode === 'high') {
                       document.documentElement.classList.add('contrast-high');
                     }
-                    if (parsed.colorTheme && parsed.colorTheme !== 'default') {
-                      document.documentElement.classList.add('theme-' + parsed.colorTheme);
+                    if (p.colorTheme && p.colorTheme !== 'default') {
+                      document.documentElement.classList.add('theme-' + p.colorTheme);
                     }
                   }
-                } catch (e) {}
+                } catch(e) {}
               })();
-            `
+            `,
           }}
         />
       </head>
-      <body className="bg-eyeva min-h-screen">
-        {/* Skip to content — accessibility */}
+      <body className="bg-eyeva">
+        {/* Skip to main content — accessibility */}
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 btn-primary"
@@ -67,34 +68,38 @@ export default function RootLayout({
         {/* Ambient background orbs */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
           <div
-            className="absolute rounded-full blur-3xl opacity-10"
             style={{
-              width: "600px",
-              height: "600px",
-              top: "-200px",
-              left: "-200px",
-              background: "radial-gradient(circle, #00d4ff, transparent 70%)",
+              position: "absolute",
+              width: 600,
+              height: 600,
+              top: -200,
+              left: -200,
+              borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(0,153,204,0.08), transparent 70%)",
+              filter: "blur(60px)",
             }}
           />
           <div
-            className="absolute rounded-full blur-3xl opacity-8"
             style={{
-              width: "500px",
-              height: "500px",
-              bottom: "-150px",
-              right: "-100px",
-              background: "radial-gradient(circle, #a855f7, transparent 70%)",
+              position: "absolute",
+              width: 500,
+              height: 500,
+              bottom: -150,
+              right: -100,
+              borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(106,90,205,0.06), transparent 70%)",
+              filter: "blur(60px)",
             }}
           />
         </div>
 
-        {/* Navigation */}
+        {/* Navigation — sidebar (desktop/tablet) + top bar + bottom tabs (mobile) */}
         <Navigation />
 
-        {/* Main content */}
+        {/* Main content area */}
         <main
           id="main-content"
-          className="relative z-10 pt-20 min-h-screen"
+          className="main-content relative z-10"
           tabIndex={-1}
         >
           {children}

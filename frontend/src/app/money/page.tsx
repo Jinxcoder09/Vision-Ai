@@ -129,7 +129,7 @@ export default function MoneyRecognitionPage() {
   }, [clearTranscript]);
 
   return (
-    <div id="camera-hud-container" className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
+    <div id="hud-fullscreen" className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
       
       {/* ── 1. Full-Screen Camera View ────────────────────────────────────────── */}
       <div className="absolute inset-0 w-full h-full z-0 bg-black">
@@ -168,8 +168,8 @@ export default function MoneyRecognitionPage() {
 
       {/* Banknote target placement frame */}
       {cameraActive && (
-        <div className="absolute top-[22%] bottom-[36%] left-[15%] right-[15%] border-2 border-dashed border-cyan-400/40 rounded-3xl pointer-events-none z-20 flex items-center justify-center">
-          <span className="font-mono text-[9px] tracking-widest text-cyan-400/70 uppercase bg-black/60 px-3 py-1 border border-cyan-500/20 rounded">
+        <div className="absolute top-[22%] bottom-[36%] left-[15%] right-[15%] border-2 border-dashed border-[#0099CC]/50 rounded-3xl pointer-events-none z-20 flex items-center justify-center">
+          <span className="font-mono text-[9px] tracking-widest text-[#0099CC]/80 uppercase bg-black/60 px-3 py-1 border border-[#0099CC]/30 rounded">
             PLACE BILL FLAT INSIDE SCANNED AREA
           </span>
         </div>
@@ -350,10 +350,10 @@ export default function MoneyRecognitionPage() {
                 onMouseUp={stopListening}
                 className={`w-20 h-20 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   status === "listening"
-                    ? "bg-rose-950/40 border-rose-500 text-rose-400 shadow-[0_0_30px_rgba(244,63,94,0.4)]"
+                    ? "bg-rose-950/40 border-rose-500 text-rose-400 shadow-[0_0_30px_rgba(255,82,82,0.4)]"
                     : status === "processing"
-                    ? "bg-amber-950/40 border-amber-500 text-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.4)] animate-pulse"
-                    : "bg-cyan-950/40 border-cyan-500 text-cyan-400 hover:border-cyan-300 shadow-[0_0_20px_rgba(0,212,255,0.2)]"
+                    ? "bg-amber-950/40 border-amber-500 text-amber-400 shadow-[0_0_30px_rgba(255,152,0,0.4)] animate-pulse"
+                    : "bg-[#0099CC]/10 border-[#0099CC] text-[#0099CC] hover:border-[#0099CC] shadow-[0_0_20px_rgba(0,153,204,0.2)]"
                 } backdrop-blur-md`}
                 aria-label="Scan bill"
               >

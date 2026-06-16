@@ -133,7 +133,7 @@ export default function NavigationPage() {
   const navDirection = getNavDirection();
 
   return (
-    <div id="camera-hud-container" className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
+    <div id="hud-fullscreen" className="fixed inset-0 w-screen h-screen overflow-hidden bg-black select-none z-0">
       
       {/* ── 1. Full-Screen Live Camera ────────────────────────────────────────── */}
       <div className="absolute inset-0 w-full h-full z-0 bg-black">
@@ -178,19 +178,19 @@ export default function NavigationPage() {
             fill="url(#nav-path-grad)"
             className="hud-path-flow"
           />
-          <line x1="250" y1="120" x2="350" y2="120" stroke="#00d4ff" strokeWidth="2" />
-          <line x1="220" y1="160" x2="380" y2="160" stroke="#00d4ff" strokeWidth="1" strokeDasharray="4 4" />
-          <line x1="180" y1="210" x2="420" y2="210" stroke="#00d4ff" strokeWidth="1" strokeDasharray="4 4" />
-          <line x1="130" y1="260" x2="470" y2="260" stroke="#00d4ff" strokeWidth="1.5" />
+          <line x1="250" y1="120" x2="350" y2="120" stroke="#0099CC" strokeWidth="2" />
+          <line x1="220" y1="160" x2="380" y2="160" stroke="#0099CC" strokeWidth="1" strokeDasharray="4 4" />
+          <line x1="180" y1="210" x2="420" y2="210" stroke="#0099CC" strokeWidth="1" strokeDasharray="4 4" />
+          <line x1="130" y1="260" x2="470" y2="260" stroke="#0099CC" strokeWidth="1.5" />
           
-          <line x1="250" y1="120" x2="100" y2="300" stroke="#00d4ff" strokeWidth="2.5" />
-          <line x1="300" y1="120" x2="300" y2="300" stroke="#00d4ff" strokeWidth="0.5" strokeDasharray="10 5" />
-          <line x1="350" y1="120" x2="500" y2="300" stroke="#00d4ff" strokeWidth="2.5" />
+          <line x1="250" y1="120" x2="100" y2="300" stroke="#0099CC" strokeWidth="2.5" />
+          <line x1="300" y1="120" x2="300" y2="300" stroke="#0099CC" strokeWidth="0.5" strokeDasharray="10 5" />
+          <line x1="350" y1="120" x2="500" y2="300" stroke="#0099CC" strokeWidth="2.5" />
 
           <defs>
             <linearGradient id="nav-path-grad" x1="0%" y1="100%" x2="0%" y2="0%">
-              <stop offset="0%" stopColor="rgba(0,212,255,0.3)" />
-              <stop offset="100%" stopColor="rgba(0,212,255,0.0)" />
+              <stop offset="0%" stopColor="rgba(0,153,204,0.3)" />
+              <stop offset="100%" stopColor="rgba(106,90,205,0.0)" />
             </linearGradient>
           </defs>
         </svg>
@@ -388,10 +388,10 @@ export default function NavigationPage() {
                 onMouseUp={stopListening}
                 className={`w-20 h-20 rounded-full border flex items-center justify-center transition-all duration-300 ${
                   status === "listening"
-                    ? "bg-rose-950/40 border-rose-500 text-rose-400 shadow-[0_0_30px_rgba(244,63,94,0.4)]"
+                    ? "bg-rose-950/40 border-rose-500 text-rose-400 shadow-[0_0_30px_rgba(255,82,82,0.4)]"
                     : status === "processing"
-                    ? "bg-amber-950/40 border-amber-500 text-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.4)] animate-pulse"
-                    : "bg-cyan-950/40 border-cyan-500 text-cyan-400 hover:border-cyan-300 shadow-[0_0_20px_rgba(0,212,255,0.2)]"
+                    ? "bg-amber-950/40 border-amber-500 text-amber-400 shadow-[0_0_30px_rgba(255,152,0,0.4)] animate-pulse"
+                    : "bg-[#0099CC]/10 border-[#0099CC] text-[#0099CC] hover:border-[#0099CC] shadow-[0_0_20px_rgba(0,153,204,0.2)]"
                 } backdrop-blur-md`}
                 aria-label="Ask navigation assistant"
               >
