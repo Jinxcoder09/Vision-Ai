@@ -618,8 +618,13 @@ async def _process_audio_numpy(
             return
 
         # Check if the transcript contains the wake word "eva" or "eyeva"
+        # Strong wake words: can appear anywhere
+        # Weak wake words: must appear at the start of the transcript
         transcript_lower = transcript.lower()
-        if not re.search(r'\b(eva|eyeva)\b', transcript_lower):
+        has_strong_ww = bool(re.search(r'\b(eva|eyeva|ava|iva|ifa|ayeva)\b', transcript_lower))
+        has_weak_ww = bool(re.search(r'^\s*(?:hey\s+|ok\s+|okay\s+)?(?:even|ever|every)\b', transcript_lower))
+
+        if not (has_strong_ww or has_weak_ww):
             logger.info("Ignoring query because wake word was not detected: '{}'", transcript)
             session.status = "idle"
             await manager.send_status(websocket, "idle")
@@ -627,9 +632,15 @@ async def _process_audio_numpy(
 
         # Clean/strip the wake word and preceding/succeeding filler/punctuation
         cleaned_transcript = re.sub(
-            r'\b(?:hey\s+|ok\s+|okay\s+)?(?:eva|eyeva)\b',
+            r'\b(?:hey\s+|ok\s+|okay\s+)?(?:eva|eyeva|ava|iva|ifa|ayeva)\b',
             '',
             transcript,
+            flags=re.IGNORECASE
+        )
+        cleaned_transcript = re.sub(
+            r'^\s*(?:hey\s+|ok\s+|okay\s+)?(?:even|ever|every)\b',
+            '',
+            cleaned_transcript,
             flags=re.IGNORECASE
         )
         cleaned_transcript = cleaned_transcript.strip(".,!?:;— ")

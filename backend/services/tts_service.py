@@ -93,6 +93,26 @@ def _synthesize_sync_local(text: str, pipeline, voice: str, speed: float) -> byt
     return buf.read()
 
 
+def normalize_wav_bytes(wav_bytes: bytes) -> bytes:
+    """Read WAV bytes, normalize amplitude peak to 0.95, and return updated WAV bytes."""
+    import soundfile as sf
+    import numpy as np
+
+    try:
+        data, samplerate = sf.read(io.BytesIO(wav_bytes))
+        max_val = np.max(np.abs(data))
+        if max_val > 0:
+            data = (data / max_val) * 0.95
+        
+        buf = io.BytesIO()
+        sf.write(buf, data, samplerate, format="WAV")
+        buf.seek(0)
+        return buf.read()
+    except Exception as e:
+        logger.warning("Failed to normalize WAV bytes: {}", e)
+        return wav_bytes
+
+
 async def init_model():
     """Verify client and eagerly pre-warm local Kokoro pipeline fallback in background."""
     await _get_client()
@@ -172,6 +192,8 @@ async def synthesize_speech(
             response_format="wav"
         )
         wav_bytes = response.content
+        # Normalize the WAV bytes to prevent low/uneven volume issues
+        wav_bytes = normalize_wav_bytes(wav_bytes)
         latency_ms = (time.monotonic() - start) * 1000
         logger.info(
             "Synthesized TTS via Groq in {:.0f}ms — model={} voice='{}' text='{}'",

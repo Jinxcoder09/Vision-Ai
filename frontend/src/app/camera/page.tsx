@@ -80,6 +80,8 @@ export default function CameraPage() {
     }
   });
 
+  const lastUserTranscript = transcript.filter((t) => t.role === "user").slice(-1)[0]?.text;
+
   // ── Auto-start camera on mount ─────────────────────────────────────────────
   useEffect(() => {
     startCamera();
@@ -640,23 +642,25 @@ export default function CameraPage() {
               </div>
 
               {/* Voice transcript block */}
-              <div className="w-full text-center text-white/95 min-h-6 flex items-center justify-center font-medium">
-                {status === "listening" && transcript.length > 0 && (
-                  <span className="text-base text-cyan-200 tracking-wide">
-                    &quot;{transcript[transcript.length - 1]?.text}&quot;
-                  </span>
+              <div className="w-full text-center text-white/95 min-h-6 flex flex-col items-center justify-center gap-1 font-medium">
+                {/* Always show the user's transcript if we are listening, processing, or speaking */}
+                {(status === "listening" || status === "processing" || status === "speaking") && (
+                  <div className="text-sm text-cyan-300/80 font-mono tracking-wide">
+                    {status === "listening" ? "Listening:" : "Question:"} <span className="text-cyan-200 font-sans font-medium">&quot;{lastUserTranscript || (transcript.length > 0 ? transcript[transcript.length - 1]?.text : "") || "..."}&quot;</span>
+                  </div>
                 )}
+
                 {status === "listening" && transcript.length === 0 && (
                   <span className="text-sm italic text-cyan-400/40 tracking-wider">Listening to speech...</span>
                 )}
                 {status === "speaking" && latestResponse && (
-                  <span className="text-base text-emerald-300 font-semibold tracking-wide">
+                  <span className="text-base text-emerald-300 font-semibold tracking-wide mt-0.5 animate-fade-in">
                     &quot;{latestResponse}&quot;
                   </span>
                 )}
                 {status === "processing" && (
-                  <span className="text-xs text-amber-300 font-mono tracking-widest uppercase animate-pulse">
-                    Querying VLM nemotron model...
+                  <span className="text-xs text-amber-300 font-mono tracking-widest uppercase animate-pulse mt-0.5">
+                    ⚡ Analyzing Environment...
                   </span>
                 )}
                 {status === "idle" && (
