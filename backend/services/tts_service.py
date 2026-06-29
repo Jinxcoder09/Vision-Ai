@@ -80,6 +80,12 @@ def _synthesize_sync_local(text: str, pipeline, voice: str, speed: float) -> byt
         raise RuntimeError("Local TTS produced no audio output")
 
     combined = np.concatenate(audio_chunks)
+    
+    # Normalize volume to prevent low volume issues
+    max_val = np.max(np.abs(combined))
+    if max_val > 0:
+        combined = (combined / max_val) * 0.95
+
     buf = io.BytesIO()
     # Kokoro generates audio at 24000 Hz sample rate
     sf.write(buf, combined, 24000, format="WAV")

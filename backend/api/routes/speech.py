@@ -703,11 +703,10 @@ async def _process_audio_numpy(
                 yield "I'm sorry, I had trouble answering that. Could you repeat?"
             token_stream = fallback_stream()
 
-        # Helper async generator that yields complete clauses/sentences from the token stream
+        # Helper async generator that yields complete sentences from the token stream
         async def sentence_generator_from_stream():
             buffer = ""
             sentence_endings = {".", "!", "?", "\n"}
-            clause_endings = {",", ";", ":", "—"}
             full_response_text = []
 
             try:
@@ -720,7 +719,7 @@ async def _process_audio_numpy(
 
                     while True:
                         split_idx = -1
-                        # 1. First priority: check sentence endings
+                        # Check sentence endings
                         for i, char in enumerate(buffer):
                             if char in sentence_endings:
                                 if i + 1 < len(buffer) and buffer[i+1].isspace():
@@ -729,19 +728,6 @@ async def _process_audio_numpy(
                                 elif i + 1 == len(buffer):
                                     split_idx = i + 1
                                     break
-                        
-                        # 2. Second priority: check clause endings if the buffer has enough words (e.g. >= 6 words)
-                        if split_idx == -1:
-                            words_count = len(buffer.split())
-                            if words_count >= 6:
-                                for i, char in enumerate(buffer):
-                                    if char in clause_endings:
-                                        if i + 1 < len(buffer) and buffer[i+1].isspace():
-                                            split_idx = i + 1
-                                            break
-                                        elif i + 1 == len(buffer):
-                                            split_idx = i + 1
-                                            break
 
                         if split_idx != -1:
                             sentence = buffer[:split_idx].strip()
@@ -769,20 +755,52 @@ async def _process_audio_numpy(
 
         generator = sentence_generator_from_stream()
 
-        # Process each completed sentence in the stream and synthesize concurrently
-        async for sentence in generator:
-            if metrics["tts_start"] is None:
-                metrics["tts_start"] = time.monotonic()
+        # Concurrent TTS pipeline queue to pre-synthesize downstream sentences in background tasks
+        task_queue = asyncio.Queue()
 
+        async def tts_producer():
             try:
-                async for chunk_bytes in tts_service.stream_synthesize_speech(
-                    sentence, session.voice, session.speed
-                ):
+                async for sentence in generator:
+                    text = sentence.strip()
+                    if not text:
+                        continue
+
+                    # Spawn background task to synthesize immediately
+                    async def run_synthesis(txt):
+                        try:
+                            wav_bytes, _ = await tts_service.synthesize_speech(
+                                txt, session.voice, session.speed
+                            )
+                            return wav_bytes
+                        except Exception as e:
+                            logger.error("Background TTS synthesis failed for '{}': {}", txt, e)
+                            return None
+
+                    task = asyncio.create_task(run_synthesis(text))
+                    await task_queue.put(task)
+            finally:
+                # Put None to signal end of stream
+                await task_queue.put(None)
+
+        producer_task = asyncio.create_task(tts_producer())
+
+        try:
+            while True:
+                task = await task_queue.get()
+                if task is None:
+                    break
+
+                if metrics["tts_start"] is None:
+                    metrics["tts_start"] = time.monotonic()
+
+                wav_bytes = await task
+                if wav_bytes:
                     if metrics["first_audio_sent"] is None:
                         metrics["first_audio_sent"] = time.monotonic()
-                    await manager.send_bytes(websocket, chunk_bytes)
-            except Exception as e:
-                logger.error("Speech synthesis failed for sentence '{}': {}", sentence, e)
+                    await manager.send_bytes(websocket, wav_bytes)
+        finally:
+            if not producer_task.done():
+                producer_task.cancel()
 
         metrics["response_complete"] = time.monotonic()
 
