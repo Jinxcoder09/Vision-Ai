@@ -542,7 +542,7 @@ export default function CameraPage() {
             </div>
             
             <div className="text-[9px] font-mono text-white/30 text-right mt-1">
-              MODEL: nvidia/llama-3.1-nemotron-nano-vl
+              MODEL: meta-llama/llama-4-scout-17b-16e-instruct
             </div>
           </div>
         </div>

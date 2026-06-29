@@ -617,24 +617,62 @@ async def _process_audio_numpy(
             await manager.send_status(websocket, "idle")
             return
 
-        await manager.send_transcript(websocket, transcript)
-        logger.info("Transcript: '{}'", transcript)
+        # Check if the transcript contains the wake word "eva" or "eyeva"
+        transcript_lower = transcript.lower()
+        if not re.search(r'\b(eva|eyeva)\b', transcript_lower):
+            logger.info("Ignoring query because wake word was not detected: '{}'", transcript)
+            session.status = "idle"
+            await manager.send_status(websocket, "idle")
+            return
+
+        # Clean/strip the wake word and preceding/succeeding filler/punctuation
+        cleaned_transcript = re.sub(
+            r'\b(?:hey\s+|ok\s+|okay\s+)?(?:eva|eyeva)\b',
+            '',
+            transcript,
+            flags=re.IGNORECASE
+        )
+        cleaned_transcript = cleaned_transcript.strip(".,!?:;— ")
+        cleaned_transcript = re.sub(r'\s+', ' ', cleaned_transcript)
+
+        logger.info("Original transcript: '{}' | Cleaned transcript: '{}'", transcript, cleaned_transcript)
+
+        # If they just said the wake word, respond with "Yes, I am listening."
+        if not cleaned_transcript:
+            logger.info("Wake word only detected. Responding directly.")
+            response_text = "Yes, I am listening."
+            session.status = "speaking"
+            await manager.send_status(websocket, "speaking")
+            await manager.send_response(websocket, response_text)
+            
+            try:
+                async for chunk_bytes in tts_service.stream_synthesize_speech(
+                    response_text, session.voice, session.speed
+                ):
+                    await manager.send_bytes(websocket, chunk_bytes)
+            except Exception as e:
+                logger.error("Speech synthesis failed for wake word response: {}", e)
+            
+            session.status = "idle"
+            await manager.send_status(websocket, "idle")
+            return
+
+        await manager.send_transcript(websocket, cleaned_transcript)
+        logger.info("Transcript: '{}'", cleaned_transcript)
 
         # 2. Generative response & streaming TTS pipeline
         session.status = "speaking"
         await manager.send_status(websocket, "speaking")
         metrics["ai_request_start"] = time.monotonic()
 
-        logger.info("Direct VLM query='{}' (mode={})", transcript, session.mode)
+        logger.info("Direct VLM query='{}' (mode={})", cleaned_transcript, session.mode)
         try:
-            is_conversational = is_conversational_query(transcript)
-            
-            # Reuse latest frame buffer and decide vision vs text-only routing
-            if session.last_frame_b64 and not is_conversational:
+            # Reuse latest frame buffer if present (multimodal VLM handles both vision and general queries)
+            if session.last_frame_b64:
                 if session.mode == "navigation":
                     nav_prompt = (
                         f"You are Eyeva, a navigation and obstacle-avoidance assistant for visually impaired users. "
-                        f"Look at the image and answer this query: '{transcript}'. "
+                        f"Look at the image and answer this query: '{cleaned_transcript}'. "
                         f"Prioritize identifying any immediate obstacles, safe paths, or walking directions. "
                         f"Keep it very brief — limit your response to 1-2 short sentences maximum."
                     )
@@ -644,7 +682,7 @@ async def _process_audio_numpy(
                 elif session.mode == "money":
                     money_prompt = (
                         f"You are Eyeva, a money recognition assistant. "
-                        f"Look at the image and answer this query: '{transcript}'. "
+                        f"Look at the image and answer this query: '{cleaned_transcript}'. "
                         f"Identify and count any banknotes or coins. State the total value clearly. "
                         f"Keep it extremely concise — limit your response to 1 short sentence."
                     )
@@ -654,11 +692,11 @@ async def _process_audio_numpy(
                 else:
                     # Default voice/scene VLM query
                     token_stream = vision_service.stream_answer_question(
-                        session.last_frame_b64, transcript
+                        session.last_frame_b64, cleaned_transcript
                     )
             else:
-                logger.info("Routing query='{}' to text-only LLM (conversational or no image)", transcript)
-                token_stream = vision_service.stream_answer_text_query(transcript)
+                logger.info("Routing query='{}' to text-only LLM (no image frame available)", cleaned_transcript)
+                token_stream = vision_service.stream_answer_text_query(cleaned_transcript)
         except Exception as e:
             logger.error("Response generation stream setup failed: {}", e)
             async def fallback_stream():
