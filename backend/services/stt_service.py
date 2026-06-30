@@ -95,7 +95,8 @@ def _transcribe_bytes_groq(audio_bytes: bytes, client: OpenAI, language: Optiona
             file=audio_file,
             model=settings.whisper_model,
             language=language,
-            response_format="verbose_json"
+            response_format="verbose_json",
+            prompt="Eva, Eyeva, Ava, Iva, Ifa, Ayeva, Even, Ever."
         )
         
         transcript = response.text.strip()
