@@ -23,6 +23,52 @@ from core.logging import setup_logging
 settings = get_settings()
 
 
+async def keep_alive_task():
+    """Background task to keep the server awake on Render by making periodic requests."""
+    while True:
+        await asyncio.sleep(540)  # 9 minutes = 540 seconds
+        try:
+            logger.info("Running keep-alive health check to prevent server sleep...")
+            # Perform a simple health check to keep the server active
+            services: dict[str, bool] = {}
+            
+            # Check STT service
+            try:
+                import openai  # noqa
+                cfg = get_settings()
+                services["stt"] = bool(cfg.groq_api_key)
+            except Exception:
+                services["stt"] = False
+            
+            # Check TTS service
+            try:
+                import openai  # noqa
+                cfg = get_settings()
+                services["tts"] = bool(cfg.groq_api_key)
+            except Exception:
+                services["tts"] = False
+            
+            # Check OCR service
+            try:
+                cfg = get_settings()
+                services["ocr"] = bool(cfg.effective_api_key)
+            except Exception:
+                services["ocr"] = False
+            
+            # Check Vision service
+            try:
+                import openai  # noqa
+                cfg = get_settings()
+                services["vision"] = bool(cfg.groq_api_key)
+            except Exception:
+                services["vision"] = False
+            
+            overall = "ok" if all(services.values()) else "degraded"
+            logger.info(f"Keep-alive check completed - Status: {overall}")
+        except Exception as e:
+            logger.error(f"Keep-alive task failed: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup / shutdown lifecycle."""
@@ -62,7 +108,17 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.critical("Model initialization failed on startup: {}", e)
 
+    # Start the keep-alive background task to prevent Render server sleep
+    keep_alive_task_handle = asyncio.create_task(keep_alive_task())
+
     yield  # app is running
+
+    # Cancel the keep-alive task on shutdown
+    keep_alive_task_handle.cancel()
+    try:
+        await keep_alive_task_handle
+    except asyncio.CancelledError:
+        pass
 
     logger.info("Eyeva AI V1 - Shutting down")
 
